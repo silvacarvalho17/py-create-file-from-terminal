@@ -34,17 +34,16 @@ def get_arguments() -> tuple[list[str], str | None]:
 
 
 def get_content() -> listlines = []
-
-    while True:
-        line = input("Enter content line: ")
-
-        if line == "stop":
-            break
-
-        lines.append(line)
-
-    return lines
-
+ 
+while True:
+line = input("Enter content line: ")
+ 
+if line == "stop":
+break
+ 
+lines.append(line)
+ 
+return lines
 
 def write_content(file_path: str, lines: list[str]) -> None:
     file_already_has_content = (
