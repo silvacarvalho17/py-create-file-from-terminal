@@ -3,61 +3,85 @@ import sys
 from datetime import datetime
 
 
-def get_content() -> str:
-    lines = []
-    counter = 1
+def get_arguments() -> tuple[list[str], str | None]:
+    directories = []
+    file_name = None
+    arguments = sys.argv[1:]
+    index = 0
+
+    while index < len(arguments):
+        if arguments[index] == "-d":
+            index += 1
+
+            while (
+                index < len(arguments)
+                and arguments[index] not in ("-d", "-f")
+            ):
+                directories.append(arguments[index])
+                index += 1
+
+        elif arguments[index] == "-f":
+            index += 1
+
+            if index < len(arguments):
+                file_name = arguments[index]
+                index += 1
+
+        else:
+            index += 1
+
+    return directories, file_name
+
+
+def get_content() -> listlines = []
 
     while True:
-        text = input("Enter content line: ")
+        line = input("Enter content line: ")
 
-        if text == "stop":
+        if line == "stop":
             break
 
-        lines.append(f"{counter} {text}")
-        counter += 1
+        lines.append(line)
 
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return lines
 
-    return timestamp + "\n" + "\n".join(lines)
+
+def write_content(file_path: str, lines: list[str]) -> None:
+    file_already_has_content = (
+        os.path.exists(file_path)
+        and os.path.getsize(file_path) > 0
+    )
+
+    with open(file_path, "a", encoding="utf-8") as file:
+        if file_already_has_content:
+            file.write("\n")
+
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        file.write(f"{timestamp}\n")
+
+        for line_number, line in enumerate(lines, start=1):
+            file.write(f"{line_number} {line}\n")
 
 
 def main() -> None:
-    args = sys.argv[1:]
+    directories, file_name = get_arguments()
 
-    directory_path = ""
-    file_name = None
-
-    if "-d" in args:
-        d_index = args.index("-d")
-
-        if "-f" in args:
-            f_index = args.index("-f")
-            dirs = args[d_index + 1:f_index]
-        else:
-            dirs = args[d_index + 1:]
-
-        directory_path = os.path.join(*dirs)
-
+    if directories:
+        directory_path = os.path.join(*directories)
         os.makedirs(directory_path, exist_ok=True)
+    else:
+        directory_path = ""
 
-    if "-f" in args:
-        f_index = args.index("-f")
-        file_name = args[f_index + 1]
+    if file_name is None:
+        return
 
-        content = get_content()
+    if directory_path:
+        file_path = os.path.join(directory_path, file_name)
+    else:
+        file_path = file_name
 
-        if directory_path:
-            file_path = os.path.join(directory_path, file_name)
-        else:
-            file_path = file_name
-
-        mode = "a" if os.path.exists(file_path) else "w"
-
-        with open(file_path, mode) as file:
-            if mode == "a":
-                file.write("\n\n")
-            file.write(content)
+    content = get_content()
+    write_content(file_path, content)
 
 
-if __name__ == "__main__":
-    main()
+main()
